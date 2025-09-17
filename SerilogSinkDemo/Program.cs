@@ -116,8 +116,20 @@ try
 
             if (index % 3 == 0)
             {
-                // 系統錯誤處理
-                Log.Error("System error processing item {ItemIndex}", index);
+                // 系統錯誤處理 - 模擬處理異常
+                try
+                {
+                    throw new InvalidOperationException($"Processing failed for item {index}",
+                        new ArgumentOutOfRangeException("index", index, "Index is out of valid range"));
+                }
+                catch (Exception ex)
+                {
+                    Log.ForContext("s_type", "SystemLog")
+                       .ForContext("s_event", "ProcessingError")
+                       .ForContext("s_topic", "item-processing")
+                       .Error(ex, "System error processing item {ItemIndex} on thread {ThreadId}",
+                           index, Thread.CurrentThread.ManagedThreadId);
+                }
             }
 
             // 業務完成事件
@@ -133,6 +145,77 @@ try
     Log.ForContext("s_type", "EventLog")
        .ForContext("s_event", "AllTasksCompleted")
        .Information("All business tasks completed successfully");
+
+    // ===== 異常處理範例 =====
+    Console.WriteLine("=== Testing exception logging examples ===");
+
+    // 範例 1: 模擬網路連線異常
+    try
+    {
+        throw new HttpRequestException("Connection timeout occurred while connecting to external API",
+            new TimeoutException("The operation has timed out."));
+    }
+    catch (Exception ex)
+    {
+        Log.ForContext("s_type", "EventLog")
+           .ForContext("s_event", "NetworkError")
+           .ForContext("s_topic", "external-api")
+           .Error(ex, "Failed to connect to external API: {ApiEndpoint}", "https://api.example.com/users");
+    }
+
+    // 範例 2: 模擬資料庫操作異常
+    try
+    {
+        throw new InvalidOperationException("Database connection is not available",
+            new ArgumentNullException("connectionString", "Connection string cannot be null"));
+    }
+    catch (Exception ex)
+    {
+        Log.ForContext("s_type", "SystemLog")
+           .ForContext("s_event", "DatabaseError")
+           .Error(ex, "Database operation failed for user {UserId} in table {TableName}", "user123", "Orders");
+    }
+
+    // 範例 3: 模擬業務邏輯異常
+    try
+    {
+        throw new ArgumentException("Invalid order amount: cannot be negative", "amount");
+    }
+    catch (Exception ex)
+    {
+        Log.ForContext("s_type", "EventLog")
+           .ForContext("s_event", "ValidationError")
+           .ForContext("s_topic", "orders")
+           .ForContext("OrderId", "ORD-003")
+           .Error(ex, "Order validation failed: {ValidationRules}", new[] { "amount > 0", "customer exists" });
+    }
+
+    // 範例 4: 模擬序列化異常
+    try
+    {
+        var invalidData = new { CircularRef = "self" };
+        throw new System.Text.Json.JsonException("A possible object cycle was detected",
+            new InvalidOperationException("Circular reference detected"));
+    }
+    catch (Exception ex)
+    {
+        Log.ForContext("s_type", "SystemLog")
+           .ForContext("s_event", "SerializationError")
+           .ForContext("s_partition", "data-processing")
+           .Error(ex, "Failed to serialize object {ObjectType} with data {Data}", "OrderData", new { Id = "ORD-004", Status = "Processing" });
+    }
+
+    // 範例 5: 模擬檔案操作異常
+    try
+    {
+        throw new UnauthorizedAccessException("Access to the path '/restricted/config.xml' is denied.");
+    }
+    catch (Exception ex)
+    {
+        Log.ForContext("s_type", "SystemLog")
+           .ForContext("s_event", "FileAccessError")
+           .Error(ex, "Failed to access configuration file: {FilePath}", "/restricted/config.xml");
+    }
 
     // 系統狀態通知
     Log.Information("Application demo completed successfully. Logs are available across multiple sinks for analysis.");
