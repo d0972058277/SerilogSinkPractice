@@ -1,0 +1,76 @@
+{
+  "id": null,
+  "title": "Serilog Loki Dashboard",
+  "tags": ["serilog", "loki", "logs"],
+  "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Log Volume",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(count_over_time({app=\"serilog-demo\"}[5m]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "displayName": "Total Logs (5m)"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Log Levels",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (level) (count_over_time({app=\"serilog-demo\"} |= \"\" [5m]))",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Recent Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{app=\"serilog-demo\"}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 16,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "sortOrder": "Descending"
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+  "refresh": "5s",
+  "version": 1
+}

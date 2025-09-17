@@ -140,6 +140,8 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./loki-dashboard.json:/etc/grafana/provisioning/dashboards/loki-dashboard.json
     networks:
       - loki
 
