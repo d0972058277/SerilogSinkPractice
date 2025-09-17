@@ -1,8 +1,10 @@
 server.name: kibana
 server.host: "0.0.0.0"
-elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+elasticsearch.hosts: ["http://elasticsearch:9200"]
 monitoring.ui.container.elasticsearch.enabled: true
 
 # Kibana 基本設定
 server.publicBaseUrl: "http://localhost:5601"
 server.maxPayload: 1048576
+
+csp.strict: false
